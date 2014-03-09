@@ -1,14 +1,10 @@
 #include<iostream>
 
-#include "opencv2/highgui/highgui.hpp"
-#include "opencv2/photo/photo.hpp"
-#include "opencv2/gpu/gpu.hpp"
 #include <opencv2/core/core.hpp>
 #include <opencv2/nonfree/nonfree.hpp>
-
-#include <opencv2/opencv.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/stitching/detail/matchers.hpp>
+
 using namespace std;
 using namespace cv;
 using namespace cv::detail;
