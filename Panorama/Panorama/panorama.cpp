@@ -31,6 +31,7 @@ vector <Mat> images;
 vector <Size> orgImagesizes;
 vector <MatchesInfo> pairwiseMatches;
 vector <int> indices;
+vector <CameraParams> cameras;
 
 void setup()
 {
@@ -116,6 +117,21 @@ void pairwiseMatching(void)
 
 }
 
+void homographyEstimation()
+{
+	cout << "In homography estimation .." << endl;
+	 
+	HomographyBasedEstimator estimator;
+	estimator(features, pairwiseMatches, cameras);
+
+	for(unsigned int i= 0; i < cameras.size(); i++)
+	{
+		Mat R;
+		cameras[i].R.convertTo(R, CV_32F);
+		cameras[i].R = R;
+	}
+}
+
 int main()
 {
 	setup();
@@ -123,6 +139,8 @@ int main()
 	findingFeatures();
 	
 	pairwiseMatching();
+
+	homographyEstimation();
 
 	getchar();
 	return 0;
