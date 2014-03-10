@@ -23,7 +23,7 @@ unsigned int numImages = 0;
 double scale = 0;
 double sscale = 0;
 double aspect = 0;
-double wrapedImgScale = 0;
+double warpedImgScale = 0;
 
 vector <string> imageNames;
 vector <ImageFeatures> features;
@@ -32,6 +32,8 @@ vector <Size> orgImagesizes;
 vector <MatchesInfo> pairwiseMatches;
 vector <int> indices;
 vector <CameraParams> cameras;
+vector <Size> sizes;
+
 
 void setup()
 {
@@ -150,6 +152,32 @@ void bundleAdjustment(void)
 
 }
 
+void computeWarpedImageScale(void)
+{
+	vector <double> focals;
+
+	for(unsigned int i= 0; i < cameras.size(); i++)
+	{
+		focals.push_back(cameras[i].focal);
+	}
+
+	sort(focals.begin(), focals.end()); 
+
+	double medianFocal = 0;
+
+	int size = focals.size();
+	if(size % 2 == 0)
+	{
+		medianFocal = (focals[size/2 - 1] + focals[size/2]) / 2;
+	}
+	else
+	{
+		medianFocal = focals[size/2];
+	}
+
+	warpedImgScale = medianFocal * 0.5;
+}
+
 int main()
 {
 	setup();
@@ -162,6 +190,9 @@ int main()
 
 	bundleAdjustment();
 
+	computeWarpedImageScale();
+
 	getchar();
 	return 0;
 }
+
