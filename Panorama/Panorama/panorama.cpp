@@ -29,6 +29,8 @@ vector <string> imageNames;
 vector <ImageFeatures> features;
 vector <Mat> images;
 vector <Size> orgImagesizes;
+vector <MatchesInfo> pairwiseMatches;
+vector <int> indices;
 
 void setup()
 {
@@ -89,12 +91,39 @@ void findingFeatures()
 
 }  
 
+void pairwiseMatching(void)
+{
+	cout << "In pairwise matching.. ";
+
+	BestOf2NearestMatcher matcher(false, 0.3f);
+	matcher(features, pairwiseMatches);
+	matcher.collectGarbage();
+
+	indices = leaveBiggestComponent(features, pairwiseMatches, 1.0f);
+
+	vector <Mat> subsetImages;
+	vector <String> subsetImageNames;
+	vector <Size> subsetOrgImageSizes;
+
+	numImages = images.size();
+
+	if(numImages < 2)
+	{
+		cout << "Need more images" << endl;
+	}
+
+	cout << "#images remaining.." << numImages << endl;
+
+}
+
 int main()
 {
 	setup();
 
 	findingFeatures();
 	
+	pairwiseMatching();
+
 	getchar();
 	return 0;
 }
