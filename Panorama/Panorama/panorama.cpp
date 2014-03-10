@@ -132,6 +132,24 @@ void homographyEstimation()
 	}
 }
 
+void bundleAdjustment(void)
+{
+	cout << "In bundle adjustment .. " << endl;
+
+	BundleAdjusterRay bAdjuster;
+	bAdjuster.setConfThresh(1.0f);
+
+	Mat_<uchar> refineMask = Mat::zeros(3, 3, CV_8U);
+
+	refineMask(0, 0) = 1; refineMask(0, 1) = 1; refineMask(0, 2) = 1;
+	refineMask(1, 1) = 1;refineMask(1, 2) = 1;
+
+	bAdjuster.setRefinementMask(refineMask);
+
+	(bAdjuster)(features, pairwiseMatches, cameras);
+
+}
+
 int main()
 {
 	setup();
@@ -141,6 +159,8 @@ int main()
 	pairwiseMatching();
 
 	homographyEstimation();
+
+	bundleAdjustment();
 
 	getchar();
 	return 0;
