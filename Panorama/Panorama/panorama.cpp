@@ -39,7 +39,8 @@ double sscale = 0;
 double aspect = 0;
 double warpedImgScale = 0;
 
-int blendType = Blender::FEATHER;
+int blendType = Blender::MULTI_BAND;
+int straighten = 0;
 
 Ptr <RotationWarper> warper;
 Ptr <ExposureCompensator> compensator;
@@ -62,7 +63,7 @@ void setup()
 	features.resize(numImages);
 	orgImagesizes.resize(numImages);
 
-	cout << "images" << numImages << endl;
+	cout << "#images " << numImages << endl;
 }
 
 void findingFeatures()
@@ -93,7 +94,7 @@ void findingFeatures()
 		cout << "\t #features for img#" << i << " " << features[i].keypoints.size() << endl;
 		features[i].img_idx = i;
 
-		cv::resize(img, img2, Size(), scale, scale);
+		cv::resize(img, img2, Size(), sscale, sscale);
 		images[i] = img2.clone();
 	}
 
@@ -116,6 +117,17 @@ void pairwiseMatching(void)
 	vector <Mat> subsetImages;
 	vector <String> subsetImageNames;
 	vector <Size> subsetOrgImageSizes;
+
+	for(unsigned int i = 0; i < indices.size(); i++)
+	{
+		subsetImageNames.push_back(imageNames[indices[i]]);
+		subsetImages.push_back(images[indices[i]]);
+		subsetOrgImageSizes.push_back(orgImagesizes[indices[i]]);
+	}
+
+	images = subsetImages;
+	imageNames = subsetImageNames;
+	orgImagesizes = subsetOrgImageSizes;
 
 	numImages = images.size();
 
@@ -245,7 +257,7 @@ void warpingImages(void)
 	}
 }
 
-void ExposureCompensation(void)
+void exposureCompensation(void)
 {
 	cout << "In exposure compensation .." << endl;
 
@@ -267,7 +279,7 @@ void findingSeamMasks(void)
 
 void compositingImages(void)
 {
-	cout << "In compositing mages .." << endl;
+	cout << "In compositing images .." << endl;
 
 	Mat img, img2, imgWarped, imgWarpedS;
 	Mat dilatedMask, seamMask, mask, maskWarped;
@@ -333,7 +345,7 @@ void compositingImages(void)
 		mask.setTo(Scalar::all(255));
 
 		//Warp the current image mask
-		warper->warp(mask, K, cameras[i].R, INTER_LINEAR, BORDER_CONSTANT, maskWarped);
+		warper->warp(mask, K, cameras[i].R, INTER_NEAREST, BORDER_CONSTANT, maskWarped);
 
 		//Compensate exposure
 		compensator->apply(i, corners[i], imgWarped, maskWarped);
@@ -352,7 +364,7 @@ void compositingImages(void)
 			blender = Blender::createDefault(blendType, 0);
 			Size dst_sz = resultRoi(corners,sizes).size();
 			float blend_width = sqrt(static_cast<float>(dst_sz.area())) * 5 / 100.f;
-			if (blend_width < 1.f)
+			if (blend_width < 1.f || blendType == Blender::NO)
 			{
 				blender = Blender::createDefault(Blender::NO, 0);
 				cout << "No blending " << endl;
@@ -394,13 +406,18 @@ int main()
 
 	computeWarpedImageScale();
 
-    straightening();
+	if(straighten == 1)
+		straightening();
 
 	warpingImages();
 
-	ExposureCompensation();
+	exposureCompensation();
+
+	findingSeamMasks();
 
 	compositingImages();
+
+	cout << "Finished stitching.. Enter any key to close\n";
 
 	getchar();
 	return 0;
