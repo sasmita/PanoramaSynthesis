@@ -40,7 +40,8 @@ double aspect = 0;
 double warpedImgScale = 0;
 
 int blendType = Blender::MULTI_BAND;
-int straighten = 0;
+int straighten = 1;
+int compensation = 0;
 
 Ptr <RotationWarper> warper;
 Ptr <ExposureCompensator> compensator;
@@ -348,7 +349,8 @@ void compositingImages(void)
 		warper->warp(mask, K, cameras[i].R, INTER_NEAREST, BORDER_CONSTANT, maskWarped);
 
 		//Compensate exposure
-		compensator->apply(i, corners[i], imgWarped, maskWarped);
+		if(compensation)
+			compensator->apply(i, corners[i], imgWarped, maskWarped);
 
 		imgWarped.convertTo(imgWarpedS, CV_16S);
 		imgWarped.release();
