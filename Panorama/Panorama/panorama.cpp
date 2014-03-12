@@ -1,10 +1,12 @@
 #include<iostream>
+#include<fstream>
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/nonfree/nonfree.hpp>
 #include <opencv2/opencv_modules.hpp>
 #include <opencv2/opencv.hpp>
 #include <opencv2/highgui/highgui.hpp>
+#include <opencv2/features2d/features2d.hpp>
 #include <opencv2/stitching/detail/matchers.hpp>
 #include <opencv2/stitching/detail/util.hpp>
 #include <opencv2/stitching/detail/motion_estimators.hpp>
@@ -13,6 +15,8 @@
 #include <opencv2/stitching/detail/blenders.hpp>
 #include <opencv2/stitching/detail/exposure_compensate.hpp>
 #include <opencv2/stitching/detail/seam_finders.hpp>
+
+
 
 using namespace std;
 using namespace cv;
@@ -111,6 +115,17 @@ void pairwiseMatching(void)
 
 	BestOf2NearestMatcher matcher(false, 0.3f);
 	matcher(features, pairwiseMatches);
+
+	if(1)
+	{
+		vector<DMatch> m12;
+		Mat outimg;
+
+		drawMatches(images[0], features[0].keypoints, images[1], features[1].keypoints, pairwiseMatches[1].matches, outimg);
+
+		imwrite("feature_matching01.jpg", outimg);
+	}
+
 	matcher.collectGarbage();
 
 	indices = leaveBiggestComponent(features, pairwiseMatches, 1.0f);
