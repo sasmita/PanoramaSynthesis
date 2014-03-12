@@ -45,7 +45,9 @@ double warpedImgScale = 0;
 
 int blendType = Blender::MULTI_BAND;
 int straighten = 1;
-int compensation = 0;
+int compensation = 1;
+int drawingMatches = 1;
+int drawFeatures = 1;
 
 Ptr <RotationWarper> warper;
 Ptr <ExposureCompensator> compensator;
@@ -75,7 +77,7 @@ void findingFeatures()
 {
 	cout << "Finding features .." << endl;
 
-	Mat img, img2;
+	Mat img, img2, outputImg;
     FeaturesFinder* finder = new SurfFeaturesFinder();
 
 	for(unsigned int i = 0; i < numImages; i++)
@@ -89,10 +91,10 @@ void findingFeatures()
 			return;
 		}
 
-		scale = min(1.0, sqrt(0.6 * 1e6 / img.size().area()));
+		scale = 1.0; //min(1.0, sqrt(0.6 * 1e6 / img.size().area()));
 		cv::resize(img, img2, Size(), scale, scale);
 
-		sscale = min(1.0, sqrt(0.1 * 1e6 / img.size().area()));
+		sscale = 1.0; //min(1.0, sqrt(0.1 * 1e6 / img.size().area()));
 		aspect = sscale / scale;
 
 		(*finder)(img2, features[i]);
@@ -101,6 +103,15 @@ void findingFeatures()
 
 		cv::resize(img, img2, Size(), sscale, sscale);
 		images[i] = img2.clone();
+
+		if(drawFeatures)
+		{
+			drawKeypoints(images[i], features[i].keypoints, outputImg, Scalar::all(-1), DrawMatchesFlags::DEFAULT);
+			string output = "features";
+			output += (i+'0');
+			output +=  ".jpg";
+			imwrite(output.c_str(), outputImg);
+		}
 	}
 
 	finder->collectGarbage();
@@ -116,14 +127,19 @@ void pairwiseMatching(void)
 	BestOf2NearestMatcher matcher(false, 0.3f);
 	matcher(features, pairwiseMatches);
 
-	if(1)
+	if(drawingMatches)
 	{
-		vector<DMatch> m12;
 		Mat outimg;
 
-		drawMatches(images[0], features[0].keypoints, images[1], features[1].keypoints, pairwiseMatches[1].matches, outimg);
+		//drawMatches(images[0], features[0].keypoints, images[1], features[1].keypoints, pairwiseMatches[1].matches, outimg);
+		//imwrite("feature_matching01.jpg", outimg);
 
-		imwrite("feature_matching01.jpg", outimg);
+
+		//drawMatches(images[2], features[2].keypoints, images[3], features[3].keypoints, pairwiseMatches[17].matches, outimg);
+		//imwrite("feature_matching23.jpg", outimg);
+
+		drawMatches(images[3], features[3].keypoints, images[4], features[4].keypoints, pairwiseMatches[25].matches, outimg);
+		imwrite("feature_matching34.jpg", outimg);
 	}
 
 	matcher.collectGarbage();
