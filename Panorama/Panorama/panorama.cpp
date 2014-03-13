@@ -46,8 +46,8 @@ double warpedImgScale = 0;
 int blendType = Blender::MULTI_BAND;
 int straighten = 1;
 int compensation = 1;
-int drawingMatches = 1;
-int drawFeatures = 1;
+int drawingMatches = 0;
+int drawFeatures = 0;
 
 Ptr <RotationWarper> warper;
 Ptr <ExposureCompensator> compensator;
@@ -61,8 +61,8 @@ void setup()
 	imageNames.push_back("photo2.JPG");
 	imageNames.push_back("photo3.JPG");
 	imageNames.push_back("photo4.JPG");
-	imageNames.push_back("photo5.JPG");
-	imageNames.push_back("photo6.JPG");
+	//imageNames.push_back("photo5.JPG");
+	//imageNames.push_back("photo6.JPG");
 
 	numImages = imageNames.size();
 
@@ -91,10 +91,10 @@ void findingFeatures()
 			return;
 		}
 
-		scale = 1.0; //min(1.0, sqrt(0.6 * 1e6 / img.size().area()));
+		scale = min(1.0, sqrt(0.6 * 1e6 / img.size().area()));
 		cv::resize(img, img2, Size(), scale, scale);
 
-		sscale = 1.0; //min(1.0, sqrt(0.1 * 1e6 / img.size().area()));
+		sscale = min(1.0, sqrt(0.1 * 1e6 / img.size().area()));
 		aspect = sscale / scale;
 
 		(*finder)(img2, features[i]);
